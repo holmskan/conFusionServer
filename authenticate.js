@@ -11,7 +11,9 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 exports.getToken = (user) => {
-  return jwt.sign(user, config.secretKey, { expiresIn: 3600 });
+  return jwt.sign(user, config.secretKey, {
+    expiresIn: 3600
+  });
 };
 
 const opts = {};
@@ -21,7 +23,9 @@ opts.secretOrKey = config.secretKey;
 exports.jwtPassport = passport.use(
   new JwtStrategy(opts, (jwt_payload, done) => {
     console.log("JWT payload: ", jwt_payload);
-    User.findOne({ _id: jwt_payload._id }, (err, user) => {
+    User.findOne({
+      _id: jwt_payload._id
+    }, (err, user) => {
       if (err) {
         return done(err, false);
       } else if (user) {
@@ -33,4 +37,16 @@ exports.jwtPassport = passport.use(
   })
 );
 
-exports.verifyUser = passport.authenticate("jwt", { session: false });
+exports.verifyUser = passport.authenticate("jwt", {
+  session: false
+});
+
+exports.verifyAdmin = (req, res, next) => {
+  if (!req.user.admin) {
+    err = new Error("You are not authorized to perform this operation!");
+    err.status = 403;
+    return next(err);
+  } else {
+    return next();
+  }
+};
